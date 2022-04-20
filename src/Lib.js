@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import {Result} from "antd";
 import {Provider} from "mobx-react";
 
 import "./index.css";
@@ -14,14 +13,29 @@ import footer from "./store/footer";
 import dialog from "./store/dialog";
 import imageHosting from "./store/imageHosting";
 import view from "./store/view";
-
-import {isPC} from "./utils/helper";
 import appContext from "./utils/appContext";
-import SvgIcon from "./icon";
-import {solveWeChatMath, solveZhihuMath, solveHtml} from "./utils/converter";
+import {solveHtml, solveWeChatMath, solveZhihuMath} from "./utils/converter";
 import {LAYOUT_ID} from "./utils/constant";
+import {Route, Switch} from "react-router-dom";
+import Article from "./component/Article/index";
 
 class Lib extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      articleOptions: {
+        title: "测试文章",
+        originalContent: "# 测试文章内容",
+        content: '<h1 id="%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0%E5%86%85%E5%AE%B9" tabindex="-1">测试文章内容</h1>\n',
+        slug: "",
+        categoryIds: [47],
+        summary: "文章摘要内容",
+        status: "PUBLISHED",
+        keepRaw: true,
+      },
+    };
+  }
+
   getWeChatHtml() {
     const layout = document.getElementById(LAYOUT_ID); // 保护现场
     const html = layout.innerHTML;
@@ -29,6 +43,11 @@ class Lib extends Component {
     const res = solveHtml();
     layout.innerHTML = html; // 恢复现场
     return res;
+  }
+
+  onEditChange(value) {
+    const {articleOptions} = this.state;
+    articleOptions.originalContent = value;
   }
 
   getZhihuHtml() {
@@ -75,28 +94,39 @@ class Lib extends Component {
         imageHosting={imageHosting}
         view={view}
       >
-        {isPC() ? (
-          <appContext.Provider value={appCtx}>
-            <App
-              defaultText={defaultText}
-              onTextChange={onTextChange}
-              onTextBlur={onTextBlur}
-              onTextFocus={onTextFocus}
-              onStyleChange={onStyleChange}
-              onStyleBlur={onStyleBlur}
-              onStyleFocus={onStyleFocus}
-              useImageHosting={useImageHosting}
-              token={token}
-            />
-          </appContext.Provider>
-        ) : (
-          <Result
-            icon={<SvgIcon name="smile" style={style.svgIcon} />}
-            title="请使用 PC 端打开排版工具"
-            subTitle="更多 Markdown Nice 信息，请扫码关注公众号「编程如画」"
-            extra={<img alt="" style={{width: "100%"}} src="https://my-wechat.mdnice.com/wechat.jpg" />}
-          />
-        )}
+        <appContext.Provider value={appCtx}>
+          <div className="uvdream">
+            <Article />
+            <Switch>
+              <Route path="/">
+                <App
+                  defaultText={defaultText}
+                  onTextChange={this.onEditChange}
+                  onTextBlur={onTextBlur}
+                  onTextFocus={onTextFocus}
+                  onStyleChange={onStyleChange}
+                  onStyleBlur={onStyleBlur}
+                  onStyleFocus={onStyleFocus}
+                  useImageHosting={useImageHosting}
+                  token={token}
+                />
+              </Route>
+              <Route path="/l">
+                <App
+                  defaultText={defaultText}
+                  onTextChange={this.onEditChange}
+                  onTextBlur={onTextBlur}
+                  onTextFocus={onTextFocus}
+                  onStyleChange={onStyleChange}
+                  onStyleBlur={onStyleBlur}
+                  onStyleFocus={onStyleFocus}
+                  useImageHosting={useImageHosting}
+                  token={token}
+                />
+              </Route>
+            </Switch>
+          </div>
+        </appContext.Provider>
       </Provider>
     );
   }

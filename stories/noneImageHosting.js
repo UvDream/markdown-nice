@@ -18,7 +18,7 @@ function App() {
     <MarkdownNice
       defaultTitle={defaultTitle}
       defaultText={defaultText}
-      onTextChange={t => console.log("text => ", t)}
+      onTextChange={(t) => console.log("text => ", t)}
       useImageHosting={useImageHosting}
     />
   );

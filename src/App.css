@@ -1,3 +1,10 @@
+.uvdream{
+  display: flex;
+}
+.uvdream-article{
+  width:250px;
+  background-color: #eef0f5;
+}
 .nice-app {
   height: 100vh;
   width: 100%;

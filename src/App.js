@@ -3,7 +3,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import "codemirror/addon/search/searchcursor";
 import "codemirror/keymap/sublime";
 import "antd/dist/antd.css";
-import {observer, inject} from "mobx-react";
+import {inject, observer} from "mobx-react";
 import classnames from "classnames";
 import throttle from "lodash.throttle";
 
@@ -14,18 +14,19 @@ import Sidebar from "./layout/Sidebar";
 import StyleEditor from "./layout/StyleEditor";
 import EditorMenu from "./layout/EditorMenu";
 import SearchBox from "./component/SearchBox";
-
+// import Article from "./component/Article/index";
 import "./App.css";
 import "./utils/mdMirror.css";
+import {withRouter} from "react-router-dom";
 
 import {
-  LAYOUT_ID,
   BOX_ID,
   IMAGE_HOSTING_NAMES,
   IMAGE_HOSTING_TYPE,
+  LAYOUT_ID,
+  MAX_MD_NUMBER,
   MJX_DATA_FORMULA,
   MJX_DATA_FORMULA_TYPE,
-  MAX_MD_NUMBER,
   THROTTLE_MATHJAX_TIME,
   THROTTLE_MD_RENDER_TIME,
 } from "./utils/constant";
@@ -35,6 +36,9 @@ import appContext from "./utils/appContext";
 import {uploadAdaptor} from "./utils/imageHosting";
 import bindHotkeys, {betterTab, rightClick} from "./utils/hotkey";
 import {message} from "antd";
+import qs from "query-string";
+
+import axios from "axios";
 
 @inject("content")
 @inject("navbar")
@@ -55,6 +59,9 @@ class App extends Component {
   }
 
   componentDidMount() {
+    window.onhashchange = () => {
+      this.setEditorContent();
+    };
     document.addEventListener("fullscreenchange", this.solveScreenChange);
     document.addEventListener("webkitfullscreenchange", this.solveScreenChange);
     document.addEventListener("mozfullscreenchange", this.solveScreenChange);
@@ -153,10 +160,33 @@ class App extends Component {
   };
 
   setEditorContent = () => {
-    const {defaultText} = this.props;
-    if (defaultText) {
-      this.props.content.setContent(defaultText);
+    // console.log("编辑器内容", this.props.content);
+    // console.log("获取参数", qs.parse(this.props.location.search));
+    const {id} = qs.parse(this.props.location.search);
+    if (id) {
+      axios
+        .get("http://www.uvdream.cn/api/admin/posts/" + id, {
+          headers: {
+            "Admin-Authorization": localStorage.getItem("Admin-Authorization"),
+          },
+        })
+        .then((res) => {
+          if (res.status === 200) {
+            this.props.content.setContent(res.data.data.originalContent);
+          } else {
+            const {defaultText} = this.props;
+            this.props.content.setContent(defaultText);
+          }
+        });
+    } else {
+      const {defaultText} = this.props;
+      defaultText ? this.props.content.setContent(defaultText) : this.props.content.setContent("");
     }
+
+    // const {defaultText} = this.props;
+    // if (defaultText) {
+    //   this.props.content.setContent(defaultText);
+    // }
   };
 
   setCurrentIndex(index) {
@@ -216,6 +246,40 @@ class App extends Component {
       }
       this.props.content.setContent(content);
       this.props.onTextChange && this.props.onTextChange(content);
+      //  开始保存数据
+      const {id} = qs.parse(this.props.location.search);
+      // console.log("保存的内容", this.state.articleOptions);
+      // if (id) {
+      //   // 更新
+      //   axios
+      //     .put("http://www.uvdream.cn/api/admin/posts/" + id, this.state.articleOptions, {
+      //       headers: {
+      //         "Admin-Authorization": localStorage.getItem("Admin-Authorization"),
+      //       },
+      //     })
+      //     .then((res) => {
+      //       if (res.status == 200) {
+      //         message.success("保存成功");
+      //       } else {
+      //         message.error("保存失败");
+      //       }
+      //     });
+      // } else {
+      //   // 新增
+      //   axios
+      //     .post("http://www.uvdream.cn/api/admin/posts", this.state.articleOptions, {
+      //       headers: {
+      //         "Admin-Authorization": localStorage.getItem("Admin-Authorization"),
+      //       },
+      //     })
+      //     .then((res) => {
+      //       if (res.status == 200) {
+      //         message.success("保存成功");
+      //       } else {
+      //         message.error("保存失败");
+      //       }
+      //     });
+      // }
     }
   };
 
@@ -339,68 +403,73 @@ class App extends Component {
     return (
       <appContext.Consumer>
         {({defaultTitle, onStyleChange, onStyleBlur, onStyleFocus, token}) => (
-          <div className="nice-app">
-            <Navbar title={defaultTitle} token={token} />
-            <div className={textContainerClass}>
-              <div id="nice-md-editor" className={mdEditingClass} onMouseOver={(e) => this.setCurrentIndex(1, e)}>
-                {isSearchOpen && <SearchBox />}
-                <CodeMirror
-                  value={this.props.content.content}
-                  options={{
-                    theme: "md-mirror",
-                    keyMap: "sublime",
-                    mode: "markdown",
-                    lineWrapping: true,
-                    lineNumbers: false,
-                    extraKeys: {
-                      ...bindHotkeys(this.props.content, this.props.dialog),
-                      Tab: betterTab,
-                      RightClick: rightClick,
-                    },
-                  }}
-                  onChange={this.handleThrottleChange}
-                  onScroll={this.handleScroll}
-                  onFocus={this.handleFocus}
-                  onBlur={this.handleBlur}
-                  onDrop={this.handleDrop}
-                  onPaste={this.handlePaste}
-                  ref={this.getInstance}
-                />
-              </div>
-              <div id="nice-rich-text" className={richTextClass} onMouseOver={(e) => this.setCurrentIndex(2, e)}>
-                <Sidebar />
-                <div
-                  id={BOX_ID}
-                  className={richTextBoxClass}
-                  onScroll={this.handleScroll}
-                  ref={(node) => {
-                    this.previewContainer = node;
-                  }}
-                >
-                  <section
-                    id={LAYOUT_ID}
-                    data-tool="mdnice编辑器"
-                    data-website="https://www.mdnice.com"
-                    dangerouslySetInnerHTML={{
-                      __html: parseHtml,
+          <div className="uvdream">
+            {/* <div className="uvdream-article"> */}
+            {/*  <Article/> */}
+            {/* </div> */}
+            <div className="nice-app">
+              <Navbar title={defaultTitle} token={token} />
+              <div className={textContainerClass}>
+                <div id="nice-md-editor" className={mdEditingClass} onMouseOver={(e) => this.setCurrentIndex(1, e)}>
+                  {isSearchOpen && <SearchBox />}
+                  <CodeMirror
+                    value={this.props.content.content}
+                    options={{
+                      theme: "md-mirror",
+                      keyMap: "sublime",
+                      mode: "markdown",
+                      lineWrapping: true,
+                      lineNumbers: false,
+                      extraKeys: {
+                        ...bindHotkeys(this.props.content, this.props.dialog),
+                        Tab: betterTab,
+                        RightClick: rightClick,
+                      },
                     }}
-                    ref={(node) => {
-                      this.previewWrap = node;
-                    }}
+                    onChange={this.handleThrottleChange}
+                    onScroll={this.handleScroll}
+                    onFocus={this.handleFocus}
+                    onBlur={this.handleBlur}
+                    onDrop={this.handleDrop}
+                    onPaste={this.handlePaste}
+                    ref={this.getInstance}
                   />
                 </div>
-              </div>
-
-              {isStyleEditorOpen && (
-                <div id="nice-style-editor" className={styleEditingClass}>
-                  <StyleEditor onStyleChange={onStyleChange} onStyleBlur={onStyleBlur} onStyleFocus={onStyleFocus} />
+                <div id="nice-rich-text" className={richTextClass} onMouseOver={(e) => this.setCurrentIndex(2, e)}>
+                  <Sidebar />
+                  <div
+                    id={BOX_ID}
+                    className={richTextBoxClass}
+                    onScroll={this.handleScroll}
+                    ref={(node) => {
+                      this.previewContainer = node;
+                    }}
+                  >
+                    <section
+                      id={LAYOUT_ID}
+                      data-tool="mdnice编辑器"
+                      data-website="https://www.mdnice.com"
+                      dangerouslySetInnerHTML={{
+                        __html: parseHtml,
+                      }}
+                      ref={(node) => {
+                        this.previewWrap = node;
+                      }}
+                    />
+                  </div>
                 </div>
-              )}
 
-              <Dialog />
-              <EditorMenu />
+                {isStyleEditorOpen && (
+                  <div id="nice-style-editor" className={styleEditingClass}>
+                    <StyleEditor onStyleChange={onStyleChange} onStyleBlur={onStyleBlur} onStyleFocus={onStyleFocus} />
+                  </div>
+                )}
+
+                <Dialog />
+                <EditorMenu />
+              </div>
+              <Footer />
             </div>
-            <Footer />
           </div>
         )}
       </appContext.Consumer>
@@ -408,4 +477,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withRouter(App);

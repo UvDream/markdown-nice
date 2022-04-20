@@ -39,7 +39,7 @@ class Navbar extends Component {
           <Theme token={token} />
           <CodeTheme />
           <Setting />
-          <Help />
+          {/* <Help /> */}
           <Tutorial />
         </div>
         <div className="nice-right-nav" />

@@ -1,22 +1,25 @@
 import React from "react";
 import ReactDOM from "react-dom";
-
+import {BrowserRouter, HashRouter} from "react-router-dom";
 import Lib from "./Lib";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
-  <Lib
-    useImageHosting={{
-      url: "https://imgkr.com/api/files/upload",
-      name: "图壳",
-      isSmmsOpen: false,
-      isQiniuyunOpen: false,
-      isAliyunOpen: true,
-      isGiteeOpen: true,
-      isGitHubOpen: true,
-    }}
-    defaultTitle="Markdown Nice"
-  />,
+  <HashRouter>
+    <Lib
+      useImageHosting={{
+        url: "https://imgkr.com/api/files/upload",
+        name: "图壳",
+        isSmmsOpen: false,
+        isQiniuyunOpen: false,
+        isAliyunOpen: true,
+        isGiteeOpen: true,
+        isGitHubOpen: true,
+      }}
+      defaultTitle="Markdown Nice"
+    />
+    ,
+  </HashRouter>,
   document.getElementById("root"),
 );
 

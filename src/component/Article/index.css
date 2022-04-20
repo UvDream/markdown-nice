@@ -1,0 +1,58 @@
+.add {
+    border-bottom: 1px solid #ccc;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.list-block {
+    height: 60px;
+    padding: 0 15px;
+}
+
+.list-block {
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.list-pagination {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.ant-pagination-item-active {
+    background-color: transparent;
+}
+
+.list-block-top {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    color: #333;
+}
+
+.active {
+    color: #fff;
+    background-color: #40a9ff;
+}
+.active .list-block-top,
+.active .list-block-bottom{
+    color: #fff;
+}
+
+.list-block-title {
+    width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 40px;
+    margin-top: 2px;
+}
+
+.list-block-bottom {
+    height: 30px;
+    line-height: 10px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, .4);
+}

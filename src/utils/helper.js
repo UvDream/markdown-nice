@@ -233,9 +233,9 @@ export const addStyleLabel = (styleLabels) => {
 };
 
 export const updateMathjax = () => {
-  window.MathJax.texReset();
-  window.MathJax.typesetClear();
-  window.MathJax.typesetPromise();
+  // window.MathJax.texReset();
+  // window.MathJax.typesetClear();
+  // window.MathJax.typesetPromise();
 };
 
 export const download = (content, filename) => {

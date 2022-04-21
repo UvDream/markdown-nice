@@ -19,7 +19,9 @@
     border-bottom: 1px solid #ccc;
     cursor: pointer;
 }
-
+.sure{
+    text-align: center;
+}
 .list-pagination {
     margin-top: 10px;
     text-align: center;

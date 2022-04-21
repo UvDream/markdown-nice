@@ -3,7 +3,7 @@ import "./index.css";
 import Lock from "../../icon/Lock";
 import Setting from "../../icon/Setting";
 import Add from "../../icon/Add";
-import {Button, Form, Input, message, Modal, Pagination, Popover} from "antd";
+import {Button, Row, Col, Form, Input, message, Modal, Pagination, Popover} from "antd";
 import axios from "axios";
 import {withRouter} from "react-router-dom";
 import qs from "query-string";
@@ -17,6 +17,8 @@ class Article extends React.Component {
       modalVisible: false,
       dataList: [],
       activeArticle: 0,
+      configModal: false,
+      articleContent: {},
       options: {
         page: 1,
         size: 10,
@@ -55,13 +57,14 @@ class Article extends React.Component {
             },
             () => {},
           );
-        } else if (res.data.status === 401) {
-          message.error("请先登录");
-          localStorage.removeItem("Admin-Authorization");
-          this.setState({
-            modalVisible: true,
-          });
         }
+      })
+      .catch((err) => {
+        message.error("请先登录");
+        localStorage.removeItem("Admin-Authorization");
+        this.setState({
+          modalVisible: true,
+        });
       });
   };
 
@@ -74,6 +77,7 @@ class Article extends React.Component {
   handleCancel = () => {
     this.setState({
       modalVisible: false,
+      configModal: false,
     });
   };
 
@@ -130,6 +134,13 @@ class Article extends React.Component {
     });
   };
 
+  saveArticleClick = (value) => {
+    this.setState({
+      articleContent: value,
+      configModal: true,
+    });
+  };
+
   addArticle = () => {
     const obj = {
       title: "未命名文章" + new Date(),
@@ -148,15 +159,17 @@ class Article extends React.Component {
     });
   };
 
+  configSubmit = () => {
+    console.log(this.state.articleContent, "提交的文章内容");
+  };
+
+  deleteArticle = (val) => {
+    message.error("暂不支持删除" + val.id);
+  };
+
   render() {
     const {getFieldDecorator} = this.props.form;
     const isLogin = localStorage.getItem("Admin-Authorization");
-    const content = (
-      <div className="config">
-        <div className="save">保存文章</div>
-        <div className="delete">删除</div>
-      </div>
-    );
     return (
       <div className="list">
         {!isLogin ? (
@@ -182,7 +195,20 @@ class Article extends React.Component {
                       <div onClick={() => this.listClick(element)} className="list-block-title">
                         {element.title}
                       </div>
-                      <Popover title="配置" content={content} trigger="click">
+                      <Popover
+                        title="配置"
+                        content={
+                          <div className="config">
+                            <div className="save" onClick={() => this.saveArticleClick(element)}>
+                              保存文章
+                            </div>
+                            <div className="delete" onClick={() => this.deleteArticle(element)}>
+                              删除
+                            </div>
+                          </div>
+                        }
+                        trigger="click"
+                      >
                         <div className="setting">
                           <Setting />
                         </div>
@@ -206,7 +232,24 @@ class Article extends React.Component {
             </div>
           </>
         )}
-
+        {/* 文章配置 */}
+        <Modal title="文章配置" visible={this.state.configModal} footer={null} onCancel={this.handleCancel}>
+          <Row>
+            <Col span="8">文章名称:</Col>
+            <Col span="16">
+              <Input value={this.state.articleContent.title} placeholder="请输入文章名称" />
+            </Col>
+          </Row>
+          <div style={{display: "flex", justifyContent: "center", marginTop: "10px"}}>
+            <Button onClick={this.configSubmit} type="primary">
+              提交
+            </Button>
+            <Button style={{marginLeft: "10px"}} onClick={this.handleCancel}>
+              取消
+            </Button>
+          </div>
+        </Modal>
+        {/* 登陆处理 */}
         <Modal title="登陆" visible={this.state.modalVisible} footer={null} onCancel={this.handleCancel}>
           <Form onSubmit={this.handleSubmit} className="login-form">
             <Form.Item label="用户名">
@@ -219,11 +262,13 @@ class Article extends React.Component {
                 rules: [{required: true, message: "请输入与密码!"}],
               })(<Input type="password" placeholder="Password" />)}
             </Form.Item>
-            <Form.Item>
+            <Form.Item className="sure">
               <Button type="primary" htmlType="submit" className="login-form-button">
                 登陆
               </Button>
-              <Button onClick={this.handleCancel}>取消</Button>
+              <Button style={{marginLeft: "10px"}} onClick={this.handleCancel}>
+                取消
+              </Button>
             </Form.Item>
           </Form>
         </Modal>

@@ -1,4 +1,5 @@
 .uvdream{
+  width: 100%;
   display: flex;
 }
 .uvdream-article{
@@ -50,6 +51,7 @@
 /* 编辑器最多会被分成三份width:33.3%，当两份时根据flex-grow:1伸展 */
 .nice-md-editing,
 .nice-style-editing {
+  /*min-width: 400px;*/
   position: relative;
   width: 33.3%;
   flex-grow: 1;
@@ -58,6 +60,7 @@
 }
 
 .nice-marked-text {
+  /*min-width: 500px;*/
   display: flex;
   justify-content: center;
   width: 33.3%;

@@ -172,7 +172,7 @@ class App extends Component {
         })
         .then((res) => {
           if (res.status === 200) {
-            this.props.content.setContent(res.data.data.originalContent);
+            this.props.content.setContent(res.data.data.originalContent ? res.data.data.originalContent : "");
           } else {
             const {defaultText} = this.props;
             this.props.content.setContent(defaultText);
@@ -247,7 +247,7 @@ class App extends Component {
       this.props.content.setContent(content);
       this.props.onTextChange && this.props.onTextChange(content);
       //  开始保存数据
-      const {id} = qs.parse(this.props.location.search);
+      // const {id} = qs.parse(this.props.location.search);
       // console.log("保存的内容", this.state.articleOptions);
       // if (id) {
       //   // 更新

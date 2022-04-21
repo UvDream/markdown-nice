@@ -3,10 +3,11 @@ import "./index.css";
 import Lock from "../../icon/Lock";
 import Setting from "../../icon/Setting";
 import Add from "../../icon/Add";
-import {Button, Form, Input, message, Modal, Pagination} from "antd";
+import {Button, Form, Input, message, Modal, Pagination, Popover} from "antd";
 import axios from "axios";
 import {withRouter} from "react-router-dom";
 import qs from "query-string";
+import {SaveArticle} from "../../article";
 
 class Article extends React.Component {
   constructor(props) {
@@ -54,6 +55,12 @@ class Article extends React.Component {
             },
             () => {},
           );
+        } else if (res.data.status === 401) {
+          message.error("请先登录");
+          localStorage.removeItem("Admin-Authorization");
+          this.setState({
+            modalVisible: true,
+          });
         }
       });
   };
@@ -100,7 +107,11 @@ class Article extends React.Component {
             if (res.data.status === 200) {
               console.log("登陆成功");
               message.success("登陆成功!");
+              this.setState({
+                modalVisible: false,
+              });
               localStorage.setItem("Admin-Authorization", res.data.data.access_token);
+              this.getArticleList();
             }
           })
           .catch((err) => {
@@ -112,49 +123,91 @@ class Article extends React.Component {
   };
 
   listClick = (value) => {
+    this.props.onTitle(value.title);
     this.props.history.push("/?id=" + value.id);
     this.setState({
       activeArticle: value.id,
     });
   };
 
+  addArticle = () => {
+    const obj = {
+      title: "未命名文章" + new Date(),
+      categoryIds: [47],
+      status: "PUBLISHED",
+    };
+    SaveArticle(obj).then((r) => {
+      console.log(r);
+      if (r.code === 200) {
+        this.props.history.push("/?id=" + r.data.id);
+        this.setState({
+          activeArticle: r.data.id,
+        });
+        this.getArticleList();
+      }
+    });
+  };
+
   render() {
     const {getFieldDecorator} = this.props.form;
+    const isLogin = localStorage.getItem("Admin-Authorization");
+    const content = (
+      <div className="config">
+        <div className="save">保存文章</div>
+        <div className="delete">删除</div>
+      </div>
+    );
     return (
       <div className="list">
-        <div className="add" onClick={this.modalOpen}>
-          <Add />
-          <span style={{marginLeft: "5px"}}>新增文章</span>
-        </div>
-        <div className="list">
-          {this.state.dataList.map((element) => {
-            return (
-              // <Link to={{pathname: "/l", search: "?id=" + element.id}}>
-              <div
-                key={element.id}
-                className={["list-block", this.state.activeArticle == element.id ? "active" : ""].join(" ")}
-                onClick={() => this.listClick(element)}
-              >
-                <div className="list-block-top">
-                  <Lock />
-                  <div className="list-block-title">{element.title}</div>
-                  <Setting />
-                </div>
-                <div className="list-block-bottom">2022/2/12 12:12</div>
-              </div>
-              // </Link>
-            );
-          })}
-        </div>
-        <div className="list-pagination">
-          <Pagination
-            size="small"
-            current={this.state.options.page}
-            total={this.state.options.total}
-            onChange={this.paginationChange}
-          />
-        </div>
-        <Modal title="登陆" visible={this.state.modalVisible} footer={null}>
+        {!isLogin ? (
+          <div onClick={this.modalOpen} className="add">
+            <span>登陆</span>
+          </div>
+        ) : (
+          <>
+            <div className="add" onClick={this.addArticle}>
+              <Add />
+              <span style={{marginLeft: "5px"}}>新增文章</span>
+            </div>
+            <div className="list">
+              {this.state.dataList.map((element) => {
+                return (
+                  // <Link to={{pathname: "/l", search: "?id=" + element.id}}>
+                  <div
+                    key={element.id}
+                    className={["list-block", this.state.activeArticle == element.id ? "active" : ""].join(" ")}
+                  >
+                    <div className="list-block-top">
+                      <Lock />
+                      <div onClick={() => this.listClick(element)} className="list-block-title">
+                        {element.title}
+                      </div>
+                      <Popover title="配置" content={content} trigger="click">
+                        <div className="setting">
+                          <Setting />
+                        </div>
+                      </Popover>
+                    </div>
+                    <div onClick={() => this.listClick(element)} className="list-block-bottom">
+                      2022/2/12 12:12
+                    </div>
+                  </div>
+                  // </Link>
+                );
+              })}
+            </div>
+            <div className="list-pagination">
+              <Pagination
+                size="small"
+                current={this.state.options.page}
+                total={this.state.options.total}
+                onChange={this.paginationChange}
+              />
+            </div>
+          </>
+        )}
+
+        <Modal title="登陆" visible={this.state.modalVisible} footer={null} onCancel={this.handleCancel}>
           <Form onSubmit={this.handleSubmit} className="login-form">
             <Form.Item label="用户名">
               {getFieldDecorator("username", {

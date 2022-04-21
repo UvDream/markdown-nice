@@ -15,9 +15,13 @@ import imageHosting from "./store/imageHosting";
 import view from "./store/view";
 import appContext from "./utils/appContext";
 import {solveHtml, solveWeChatMath, solveZhihuMath} from "./utils/converter";
-import {LAYOUT_ID} from "./utils/constant";
+import {LAYOUT_ID, MAX_MD_NUMBER, THROTTLE_MD_RENDER_TIME} from "./utils/constant";
 import {Route, Switch} from "react-router-dom";
 import Article from "./component/Article/index";
+import {SaveArticle} from "./article";
+import qs from "query-string";
+import {withRouter} from "react-router-dom";
+import throttle from "lodash.throttle";
 
 class Lib extends Component {
   constructor(props) {
@@ -34,6 +38,7 @@ class Lib extends Component {
         keepRaw: true,
       },
     };
+    this.saveArticleFunc = throttle(this.saveArticle, 10000);
   }
 
   getWeChatHtml() {
@@ -45,10 +50,21 @@ class Lib extends Component {
     return res;
   }
 
-  onEditChange(value) {
+  onEditChange = (value) => {
     const {articleOptions} = this.state;
     articleOptions.originalContent = value;
-  }
+    this.setState({articleOptions});
+    this.saveArticleFunc();
+  };
+
+  saveArticle = () => {
+    const {id} = qs.parse(this.props.location.search);
+    const {articleOptions} = this.state;
+    articleOptions.id = Number(id);
+    this.setState({articleOptions}, () => {
+      SaveArticle(this.state.articleOptions, true);
+    });
+  };
 
   getZhihuHtml() {
     const layout = document.getElementById(LAYOUT_ID); // 保护现场
@@ -58,6 +74,12 @@ class Lib extends Component {
     layout.innerHTML = html; // 恢复现场
     return res;
   }
+
+  getTitle = (title) => {
+    const {articleOptions} = this.state;
+    articleOptions.title = title;
+    this.setState({articleOptions});
+  };
 
   render() {
     const {
@@ -96,22 +118,9 @@ class Lib extends Component {
       >
         <appContext.Provider value={appCtx}>
           <div className="uvdream">
-            <Article />
+            <Article onTitle={this.getTitle} />
             <Switch>
               <Route path="/">
-                <App
-                  defaultText={defaultText}
-                  onTextChange={this.onEditChange}
-                  onTextBlur={onTextBlur}
-                  onTextFocus={onTextFocus}
-                  onStyleChange={onStyleChange}
-                  onStyleBlur={onStyleBlur}
-                  onStyleFocus={onStyleFocus}
-                  useImageHosting={useImageHosting}
-                  token={token}
-                />
-              </Route>
-              <Route path="/l">
                 <App
                   defaultText={defaultText}
                   onTextChange={this.onEditChange}
@@ -182,4 +191,4 @@ Lib.propTypes = {
   }),
 };
 
-export default Lib;
+export default withRouter(Lib);

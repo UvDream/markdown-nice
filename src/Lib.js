@@ -15,12 +15,11 @@ import imageHosting from "./store/imageHosting";
 import view from "./store/view";
 import appContext from "./utils/appContext";
 import {solveHtml, solveWeChatMath, solveZhihuMath} from "./utils/converter";
-import {LAYOUT_ID, MAX_MD_NUMBER, THROTTLE_MD_RENDER_TIME} from "./utils/constant";
-import {Route, Switch} from "react-router-dom";
+import {LAYOUT_ID} from "./utils/constant";
+import {Route, Switch, withRouter} from "react-router-dom";
 import Article from "./component/Article/index";
 import {SaveArticle} from "./article";
 import qs from "query-string";
-import {withRouter} from "react-router-dom";
 import throttle from "lodash.throttle";
 
 class Lib extends Component {
@@ -75,10 +74,19 @@ class Lib extends Component {
     return res;
   }
 
-  getTitle = (title) => {
-    const {articleOptions} = this.state;
-    articleOptions.title = title;
-    this.setState({articleOptions});
+  // getTitle = (title) => {
+  //   const {articleOptions} = this.state;
+  //   articleOptions.title = title;
+  //   this.setState({articleOptions});
+  // };
+  getArticle = (val) => {
+    const {title} = val;
+    // 标题
+    const article = this.state.articleOptions;
+    title ? (article.title = title) : null;
+    this.setState({articleOptions: article});
+    console.log(this.state.articleOptions);
+    this.saveArticleFunc();
   };
 
   render() {
@@ -118,7 +126,7 @@ class Lib extends Component {
       >
         <appContext.Provider value={appCtx}>
           <div className="uvdream">
-            <Article onTitle={this.getTitle} />
+            <Article onArticle={this.getArticle} />
             <Switch>
               <Route path="/">
                 <App

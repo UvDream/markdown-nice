@@ -3,7 +3,7 @@ import "./index.css";
 import Lock from "../../icon/Lock";
 import Setting from "../../icon/Setting";
 import Add from "../../icon/Add";
-import {Button, Row, Col, Form, Input, message, Modal, Pagination, Popover} from "antd";
+import {Button, Col, Form, Input, message, Modal, Pagination, Popover, Row} from "antd";
 import axios from "axios";
 import {withRouter} from "react-router-dom";
 import qs from "query-string";
@@ -127,7 +127,7 @@ class Article extends React.Component {
   };
 
   listClick = (value) => {
-    this.props.onTitle(value.title);
+    this.props.onArticle(value);
     this.props.history.push("/?id=" + value.id);
     this.setState({
       activeArticle: value.id,
@@ -160,11 +160,23 @@ class Article extends React.Component {
   };
 
   configSubmit = () => {
+    this.setState({
+      configModal: false,
+    });
+    this.props.onArticle(this.state.articleContent);
     console.log(this.state.articleContent, "提交的文章内容");
   };
 
   deleteArticle = (val) => {
     message.error("暂不支持删除" + val.id);
+  };
+
+  inputChange = (e) => {
+    const article = this.state.articleContent;
+    article.title = e.target.value;
+    this.setState({
+      articleContent: article,
+    });
   };
 
   render() {
@@ -237,7 +249,7 @@ class Article extends React.Component {
           <Row>
             <Col span="8">文章名称:</Col>
             <Col span="16">
-              <Input value={this.state.articleContent.title} placeholder="请输入文章名称" />
+              <Input value={this.state.articleContent.title} placeholder="请输入文章名称" onChange={this.inputChange} />
             </Col>
           </Row>
           <div style={{display: "flex", justifyContent: "center", marginTop: "10px"}}>

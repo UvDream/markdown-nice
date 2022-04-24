@@ -78,7 +78,7 @@ export default `/* 全局属性
   height: 15px;
   background-size:100% 100%;
   background-repeat:no-repeat;
-  background-image: url(https://files.mdnice.com/pic/4e116911-86c9-40c7-80ec-bd05e65efa5b.png);
+  background-image: url(http://www.pic.uvdream.cn/20220424093727.png);
 }
 
 /* 三级标题 */

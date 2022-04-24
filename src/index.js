@@ -8,7 +8,7 @@ ReactDOM.render(
   <HashRouter>
     <Lib
       useImageHosting={{
-        url: "https://imgkr.com/api/files/upload",
+        url: "http://uvdream.cn/api/admin/attachments/upload",
         name: "图壳",
         isSmmsOpen: false,
         isQiniuyunOpen: false,

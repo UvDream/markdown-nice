@@ -8,16 +8,16 @@ import OSS from "ali-oss";
 import imageHosting from "../store/imageHosting";
 
 import {
-  SM_MS_PROXY,
   ALIOSS_IMAGE_HOSTING,
-  QINIUOSS_IMAGE_HOSTING,
   GITEE_IMAGE_HOSTING,
   GITHUB_IMAGE_HOSTING,
+  IMAGE_HOSTING_NAMES,
   IMAGE_HOSTING_TYPE,
   IS_CONTAIN_IMG_NAME,
-  IMAGE_HOSTING_NAMES,
+  QINIUOSS_IMAGE_HOSTING,
+  SM_MS_PROXY,
 } from "./constant";
-import {toBlob, getOSSName, axiosMdnice} from "./helper";
+import {axiosMdnice, getOSSName, toBlob} from "./helper";
 
 function showUploadNoti() {
   message.loading("图片上传中", 0);
@@ -167,6 +167,7 @@ export const customImageUpload = async ({
     const config = {
       headers: {
         "Content-Type": "multipart/form-data",
+        "Admin-Authorization": localStorage.getItem("Admin-Authorization"),
       },
     };
     const postURL = imageHosting.hostingUrl;
@@ -176,7 +177,7 @@ export const customImageUpload = async ({
     const filename = names.join(".");
     const image = {
       filename,
-      url: encodeURI(result.data.data), // 这里要和外接图床规定好数据逻辑，否则会接入失败
+      url: encodeURI("http://www.uvdream.cn" + result.data.data.path), // 这里要和外接图床规定好数据逻辑，否则会接入失败
     };
 
     if (content) {
@@ -482,6 +483,7 @@ export const githubUpload = ({
 
 // 自动检测上传配置，进行上传
 export const uploadAdaptor = (...args) => {
+  // console.log("上传文件")
   const type = localStorage.getItem(IMAGE_HOSTING_TYPE); // SM.MS | 阿里云 | 七牛云 | Gitee | GitHub | 用户自定义图床
   const userType = imageHosting.hostingName;
   if (type === userType) {

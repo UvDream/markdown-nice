@@ -21,6 +21,7 @@ import Article from "./component/Article/index";
 import {SaveArticle} from "./article";
 import qs from "query-string";
 import throttle from "lodash.throttle";
+import { markdownParser } from "./utils/helper";
 
 class Lib extends Component {
   constructor(props) {
@@ -29,7 +30,7 @@ class Lib extends Component {
       articleOptions: {
         title: "测试文章",
         originalContent: "# 测试文章内容",
-        content: '<h1 id="%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0%E5%86%85%E5%AE%B9" tabindex="-1">测试文章内容</h1>\n',
+        content: '',
         slug: "",
         categoryIds: [47],
         summary: "文章摘要内容",
@@ -60,6 +61,7 @@ class Lib extends Component {
     const {id} = qs.parse(this.props.location.search);
     const {articleOptions} = this.state;
     articleOptions.id = Number(id);
+    articleOptions.content = markdownParser.render(articleOptions.originalContent);
     this.setState({articleOptions}, () => {
       SaveArticle(this.state.articleOptions, true);
     });

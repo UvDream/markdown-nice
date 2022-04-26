@@ -245,41 +245,9 @@ class App extends Component {
         return;
       }
       this.props.content.setContent(content);
+
       this.props.onTextChange && this.props.onTextChange(content);
-      //  开始保存数据
-      // const {id} = qs.parse(this.props.location.search);
-      // console.log("保存的内容", this.state.articleOptions);
-      // if (id) {
-      //   // 更新
-      //   axios
-      //     .put("http://www.uvdream.cn/api/admin/posts/" + id, this.state.articleOptions, {
-      //       headers: {
-      //         "Admin-Authorization": localStorage.getItem("Admin-Authorization"),
-      //       },
-      //     })
-      //     .then((res) => {
-      //       if (res.status == 200) {
-      //         message.success("保存成功");
-      //       } else {
-      //         message.error("保存失败");
-      //       }
-      //     });
-      // } else {
-      //   // 新增
-      //   axios
-      //     .post("http://www.uvdream.cn/api/admin/posts", this.state.articleOptions, {
-      //       headers: {
-      //         "Admin-Authorization": localStorage.getItem("Admin-Authorization"),
-      //       },
-      //     })
-      //     .then((res) => {
-      //       if (res.status == 200) {
-      //         message.success("保存成功");
-      //       } else {
-      //         message.error("保存失败");
-      //       }
-      //     });
-      // }
+
     }
   };
 
